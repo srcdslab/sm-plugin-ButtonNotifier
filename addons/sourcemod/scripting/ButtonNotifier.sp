@@ -72,7 +72,7 @@ public void TriggerTouched(const char[] output, int caller, int activator, float
 	else if (g_cPrintType.IntValue == 2)
 		PrintToServer("[Trigger] %N [%s] triggered %s", activator, userid, entity);
 	else
-		CPrintToChatAll("{fullred}[Trigger] {green}%N [{lightgreen}%s{green}] triggered {blue}%s", activator, userid, entity);
+		CPrintToChatAll("{darkred}[Trigger] {green}%N [{lightgreen}%s{green}] triggered {darkblue}%s", activator, userid, entity);
 }
 
 public void ButtonPressed(const char[] output, int caller, int activator, float delay)
@@ -113,7 +113,7 @@ public void ButtonPressed(const char[] output, int caller, int activator, float 
 						if (g_cPrintType.IntValue == 1)
 							PrintToConsole(i, "[Button] %N [%s] is spamming %s", activator, userid, entity);
 						else
-							CPrintToChat(i, "{fullred}[Button] {green}%N [{lightgreen}%s{green}] is spamming {blue}%s", activator, userid, entity);
+							CPrintToChat(i, "{darkred}[Button] {green}%N [{lightgreen}%s{green}] is spamming {darkblue}%s", activator, userid, entity);
 					}
 				}
 			}
@@ -131,7 +131,7 @@ public void ButtonPressed(const char[] output, int caller, int activator, float 
 		else if (g_cPrintType.IntValue == 2)
 			PrintToServer("[Button] %N [%s] triggered %s", activator, userid, entity);
 		else
-			CPrintToChatAll("{fullred}[Button] {green}%N [{lightgreen}%s{green}] triggered {blue}%s", activator, userid, entity);
+			CPrintToChatAll("{darkred}[Button] {green}%N [{lightgreen}%s{green}] triggered {darkblue}%s", activator, userid, entity);
 	}
 
 	g_ilastButtonUse[activator] = currentTime;
