@@ -3,8 +3,8 @@
 #include <sourcemod>
 #include <multicolors>
 #include <sdktools>
-#include <entWatch>
 #include <cstrike>
+#tryinclude <entWatch>
 
 #pragma newdecls required
 
@@ -77,7 +77,11 @@ public void TriggerTouched(const char[] output, int caller, int activator, float
 
 public void ButtonPressed(const char[] output, int caller, int activator, float delay)
 {
+#if defined _EntWatch_include
 	if (!IsValidClient(activator) || EntWatch_IsSpecialItem(activator))
+#else
+	if (!IsValidClient(activator))
+#endif
 		return;
 
 	int currentTime = GetTime();
