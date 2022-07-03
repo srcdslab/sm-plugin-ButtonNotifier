@@ -50,6 +50,7 @@ public Action Timer_HookButtons(Handle timer)
 {
 	HookEntityOutput("func_button", "OnPressed", ButtonPressed);
 	HookEntityOutput("trigger_once", "OnTrigger", TriggerTouched);
+	return Plugin_Stop;
 }
 
 public void TriggerTouched(const char[] output, int caller, int activator, float delay)
