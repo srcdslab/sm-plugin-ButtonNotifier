@@ -1,14 +1,12 @@
 #pragma semicolon 1
 
 #include <sourcemod>
-#include <multicolors>
 #include <sdktools>
 #include <cstrike>
+#include <multicolors>
 #tryinclude <entWatch>
 
 #pragma newdecls required
-
-#define VERSION "1.0"
 
 ConVar g_cBlockSpam;
 ConVar g_cBlockSpamDelay;
@@ -22,7 +20,7 @@ public Plugin myinfo =
 	name = "Button Notifier",
 	author = "Silence, maxime1907",
 	description = "Logs button and trigger presses to the chat.",
-	version = VERSION,
+	version = "1.0.0",
 	url = ""
 };
 
