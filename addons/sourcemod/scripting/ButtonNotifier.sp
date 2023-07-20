@@ -42,8 +42,8 @@ public void OnPluginStart()
 
 	/* COOKIES */
 	SetCookieMenuItem(CookieHandler, 0, "Buttons Notifier Settings");
-	g_hButtons = RegClientCookie("bn_buttons_type", "ZLeader Marker Position", CookieAccess_Protected);
-	g_hTriggers = RegClientCookie("bn_triggers_type", "ZLeader Marker Position", CookieAccess_Protected);
+	g_hButtons = RegClientCookie("bn_buttons_type", "Print usage of Buttons in Chat or Console", CookieAccess_Protected);
+	g_hTriggers = RegClientCookie("bn_triggers_type", "Print Trigger triggered in Chat or Console ", CookieAccess_Protected);
 	
 	/* Late load */
 	for (int i = 1; i < MaxClients; i++)
