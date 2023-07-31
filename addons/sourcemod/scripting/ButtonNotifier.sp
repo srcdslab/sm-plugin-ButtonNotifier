@@ -30,7 +30,7 @@ public Plugin myinfo =
 	name = "Button Notifier",
 	author = "Silence, maxime1907, .Rushaway",
 	description = "Logs button and trigger presses to the chat.",
-	version = "2.0",
+	version = "2.0.1",
 	url = ""
 };
 
@@ -251,7 +251,7 @@ public void TriggerTouched(const char[] output, int caller, int activator, float
 public void ButtonPressed(const char[] output, int caller, int activator, float delay)
 {
 #if defined _EntWatch_include
-	if (!IsValidClient(activator) || !IsValidEntity(caller) || EntWatch_IsSpecialItem(activator))
+	if (!IsValidClient(activator) || !IsValidEntity(caller) || EntWatch_IsSpecialItem(caller))
 #else
 	if (!IsValidClient(activator) || !IsValidEntity(caller))
 #endif
