@@ -25,12 +25,14 @@ int g_iTriggersDisplay[MAXPLAYERS+1];
 int g_ilastButtonUse[MAXPLAYERS+1] = { -1, ... };
 int g_iwaitBeforeButtonUse[MAXPLAYERS+1] = { -1, ... };
 
+bool g_bTriggered[2048] = { false, ... };
+
 public Plugin myinfo =
 {
-	name = "Button Notifier",
+	name = "Button & Triggers Notifier",
 	author = "Silence, maxime1907, .Rushaway",
 	description = "Logs button and trigger presses to the chat.",
-	version = "2.0.1",
+	version = "2.0.2",
 	url = ""
 };
 
@@ -44,6 +46,9 @@ public void OnPluginStart()
 	SetCookieMenuItem(CookieHandler, 0, "Buttons Notifier Settings");
 	g_hButtons = RegClientCookie("bn_buttons_type", "Print usage of Buttons in Chat or Console", CookieAccess_Protected);
 	g_hTriggers = RegClientCookie("bn_triggers_type", "Print Trigger triggered in Chat or Console ", CookieAccess_Protected);
+
+	/* HOOKS */
+	HookEvent("round_start", Event_RoundStart, EventHookMode_Pre);
 	
 	/* Late load */
 	for (int i = 1; i < MaxClients; i++)
@@ -60,10 +65,27 @@ public void OnMapStart()
 	CreateTimer(1.0, Timer_HookButtons);
 }
 
+public void Event_RoundStart(Event hEvent, const char[] sName, bool bDontBroadcast)
+{
+	// Reset values
+	for (int i = 1; i <= 2047; i++)
+	{
+		g_bTriggered[i] = false;
+	}
+
+	for (int i = 1; i <= MaxClients; i++)
+	{
+		g_ilastButtonUse[i] = -1;
+		g_iwaitBeforeButtonUse[i] = -1;
+	}
+}
+
 public void OnMapEnd()
 {
 	UnhookEntityOutput("func_button", "OnPressed", ButtonPressed);
 	UnhookEntityOutput("trigger_once", "OnTrigger", TriggerTouched);
+	UnhookEntityOutput("trigger_multiple", "OnStartTouch", TriggerTouched);
+	UnhookEntityOutput("trigger_teleport", "OnStartTouch", TriggerTouched);
 }
 
 public void OnClientPutInServer(int client)
@@ -101,11 +123,10 @@ public void ReadClientCookies(int client)
 public void SetClientCookies(int client)
 {
 	char sValue[8];
-
-	Format(sValue, sizeof(sValue), "%i", g_iButtonsDisplay[client]);
+	FormatEx(sValue, sizeof(sValue), "%i", g_iButtonsDisplay[client]);
 	SetClientCookie(client, g_hButtons, sValue);
 
-	Format(sValue, sizeof(sValue), "%i", g_iTriggersDisplay[client]);
+	FormatEx(sValue, sizeof(sValue), "%i", g_iTriggersDisplay[client]);
 	SetClientCookie(client, g_hTriggers, sValue);
 }
 
@@ -127,8 +148,8 @@ public void NotifierSetting(int client)
 	menu.SetTitle("Buttons - Triggers Notifier Settings");
 
 	char buttons[64], triggers[64];
-	Format(buttons, 64, "Buttons");
-	Format(triggers, 64, "Triggers");
+	FormatEx(buttons, 64, "Buttons");
+	FormatEx(triggers, 64, "Triggers");
 
 	menu.AddItem("buttons", buttons);
 	menu.AddItem("triggers", triggers);
@@ -146,24 +167,24 @@ public int NotifierSettingHandler(Menu menu, MenuAction action, int param1, int 
 		{
 			char type[32], info[64], display[64];
 			menu.GetItem(param2, info, sizeof(info));
-			if (StrEqual(info, "buttons"))
+			if (strcmp(info, "buttons", false) == 0)
 			{
 				if (g_iButtonsDisplay[param1] == CONSOLE)
-					Format(type, sizeof(type), "Console");
+					FormatEx(type, sizeof(type), "Console");
 				else
-					Format(type, sizeof(type), "Chat");
+					FormatEx(type, sizeof(type), "Chat");
 
-				Format(display, sizeof(display), "Buttons: %s", type);
+				FormatEx(display, sizeof(display), "Buttons: %s", type);
 				return RedrawMenuItem(display);
 			}
-			else if (StrEqual(info, "triggers"))
+			else if (strcmp(info, "triggers", false) == 0)
 			{
 				if (g_iTriggersDisplay[param1] == CONSOLE)
-					Format(type, sizeof(type), "Console");
+					FormatEx(type, sizeof(type), "Console");
 				else
-					Format(type, sizeof(type), "Chat");
+					FormatEx(type, sizeof(type), "Chat");
 
-				Format(display, sizeof(display), "Triggers: %s", type);
+				FormatEx(display, sizeof(display), "Triggers: %s", type);
 				return RedrawMenuItem(display);
 			}
 		}
@@ -171,7 +192,7 @@ public int NotifierSettingHandler(Menu menu, MenuAction action, int param1, int 
 		{
 			char info[64];
 			menu.GetItem(param2, info, sizeof(info));
-			if (StrEqual(info, "buttons"))
+			if (strcmp(info, "buttons", false) == 0)
 			{
 				if (g_iButtonsDisplay[param1] == CONSOLE)
 				{
@@ -184,7 +205,7 @@ public int NotifierSettingHandler(Menu menu, MenuAction action, int param1, int 
 					CPrintToChat(param1, "{red}[Button Notifier] {lightgreen}You set display in {blue}Console");
 				}
 			}
-			else if (StrEqual(info, "triggers"))
+			else if (strcmp(info, "triggers", false) == 0)
 			{
 				if (g_iTriggersDisplay[param1] == CONSOLE)
 				{
@@ -216,32 +237,41 @@ public Action Timer_HookButtons(Handle timer)
 {
 	HookEntityOutput("func_button", "OnPressed", ButtonPressed);
 	HookEntityOutput("trigger_once", "OnTrigger", TriggerTouched);
+	HookEntityOutput("trigger_multiple", "OnStartTouch", TriggerTouched);
+	HookEntityOutput("trigger_teleport", "OnStartTouch", TriggerTouched);
 	return Plugin_Stop;
 }
 
 public void TriggerTouched(const char[] output, int caller, int activator, float delay)
 {
-	if (!IsValidClient(activator))
+	if (g_bTriggered[caller] || !IsValidClient(activator))
 		return;
+
+	g_bTriggered[caller] = true;
+
+	char sClassname[32];
+	GetEdictClassname(caller, sClassname, sizeof(sClassname));
+	ReplaceString(sClassname, sizeof(sClassname), "trigger_", "", false);
 
 	char entity[64];
 	GetEntPropString(caller, Prop_Data, "m_iName", entity, sizeof(entity));
 
-	if (StrEqual(entity, "", true))
-		Format(entity, sizeof(entity), "trigger #%d", caller);
+	if (strcmp(entity, "", false) == 0)
+		FormatEx(entity, sizeof(entity), "trigger #%d", caller);
 
 	char userid[64];
-	GetClientAuthId(activator, AuthId_Steam2, userid, sizeof(userid));
+	GetClientAuthId(activator, AuthId_Steam2, userid, sizeof(userid), false);
 	Format(userid, sizeof(userid), "#%d|%s", GetClientUserId(activator), userid);
 	ReplaceString(userid, sizeof(userid), "STEAM_", "", true);
 
-	for (int i = 1; i <= MaxClients; i++) {
+	for (int i = 1; i <= MaxClients; i++)
+	{
 		if(IsClientConnected(i) && IsClientInGame(i) && (IsClientSourceTV(i) || GetAdminFlag(GetUserAdmin(i), Admin_Generic)))
 		{
 			if (g_iTriggersDisplay[i] == CONSOLE)
-				PrintToConsole(i, "[Trigger Notifier] %N (%s) triggered %s", activator, userid, entity);
+				PrintToConsole(i, "[Notifier - Trigger %s] %N (%s) triggered %s", sClassname, activator, userid, entity);
 			else
-				CPrintToChat(i, "{red}[Trigger Notifier] {white}%N {red}({grey}%s{red}) {lightgreen}triggered {blue}%s", activator, userid, entity);
+				CPrintToChat(i, "{red}[Notifier - Trigger %s] {white}%N {red}({grey}%s{red}) {lightgreen}triggered {blue}%s", sClassname, activator, userid, entity);
 		}
 	}
 
@@ -262,11 +292,11 @@ public void ButtonPressed(const char[] output, int caller, int activator, float 
 	char entity[64];
 	GetEntPropString(caller, Prop_Data, "m_iName", entity, sizeof(entity));
 
-	if (StrEqual(entity, "", true))
-		Format(entity, sizeof(entity), "button #%d", caller);
+	if (strcmp(entity, "", false) == 0)
+		FormatEx(entity, sizeof(entity), "button #%d", caller);
 
 	char userid[64];
-	GetClientAuthId(activator, AuthId_Steam2, userid, sizeof(userid));
+	GetClientAuthId(activator, AuthId_Steam2, userid, sizeof(userid), false);
 	Format(userid, sizeof(userid), "#%d|%s", GetClientUserId(activator), userid);
 	ReplaceString(userid, sizeof(userid), "STEAM_", "", true);
 
