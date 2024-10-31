@@ -32,7 +32,7 @@ public Plugin myinfo =
 	name = "Button & Triggers Notifier",
 	author = "Silence, maxime1907, .Rushaway",
 	description = "Logs button and trigger presses to the chat.",
-	version = "2.0.2",
+	version = "2.0.3",
 	url = ""
 };
 
@@ -260,9 +260,10 @@ public void TriggerTouched(const char[] output, int caller, int activator, float
 		FormatEx(entity, sizeof(entity), "trigger #%d", caller);
 
 	char userid[64];
-	GetClientAuthId(activator, AuthId_Steam2, userid, sizeof(userid), false);
+	GetClientAuthId(activator, AuthId_Steam3, userid, sizeof(userid), false);
+	ReplaceString(userid, sizeof(userid), "[", "", true);
+	ReplaceString(userid, sizeof(userid), "]", "", true);
 	Format(userid, sizeof(userid), "#%d|%s", GetClientUserId(activator), userid);
-	ReplaceString(userid, sizeof(userid), "STEAM_", "", true);
 
 	for (int i = 1; i <= MaxClients; i++)
 	{
