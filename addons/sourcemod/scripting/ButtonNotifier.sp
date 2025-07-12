@@ -14,6 +14,8 @@
 #define CHAT 1
 #define CONSOLE 2
 
+bool g_bLate = false;
+
 ConVar g_cBlockSpam;
 ConVar g_cBlockSpamDelay;
 
@@ -35,11 +37,19 @@ public Plugin myinfo =
 	url = ""
 };
 
+public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
+{
+	g_bLate = late;
+	return APLRes_Success;
+}
+
 public void OnPluginStart()
 {
 	/* CONVARS */
 	g_cBlockSpam = CreateConVar("sm_buttonnotifier_block_spam", "1", "Blocks spammers abusing certain buttons", FCVAR_NONE, true, 0.0, true, 1.0);
 	g_cBlockSpamDelay = CreateConVar("sm_buttonnotifier_block_spam_delay", "5", "Time to wait before notifying the next button press", FCVAR_NONE, true, 1.0, true, 60.0);
+
+	AutoExecConfig(true);
 
 	/* COOKIES */
 	SetCookieMenuItem(CookieHandler, 0, "Buttons Notifier Settings");
@@ -48,14 +58,16 @@ public void OnPluginStart()
 	/* HOOKS */
 	HookEvent("round_start", Event_RoundStart, EventHookMode_Pre);
 	
-	/* Late load */
+	if (!g_bLate)
+		return;
+
 	for (int i = 1; i < MaxClients; i++)
 	{
 		if (IsClientConnected(i))
 			OnClientPutInServer(i);
 	}
 
-	AutoExecConfig(true);
+	g_bLate = false;
 }
 
 public void OnMapStart()
@@ -88,6 +100,9 @@ public void OnMapEnd()
 
 public void OnClientPutInServer(int client)
 {
+	if (!g_bLate)
+		return;
+
 	if (AreClientCookiesCached(client))
 		ReadClientCookies(client);
 }
