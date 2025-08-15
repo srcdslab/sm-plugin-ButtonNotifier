@@ -117,14 +117,10 @@ public void ReadClientCookies(int client)
 	char sValue[32];
 	GetClientCookie(client, g_hPreferences, sValue, 32);
 
-	if (sValue[0] != '\0')
+	if (strlen(sValue) >= 2)
 	{
-		char sTemp[2];
-		FormatEx(sTemp, sizeof(sTemp), "%c", sValue[0]);
-		g_iButtonsDisplay[client] = StringToInt(sTemp);
-
-		FormatEx(sTemp, sizeof(sTemp), "%c", sValue[1]);
-		g_iTriggersDisplay[client] = StringToInt(sTemp);
+		g_iButtonsDisplay[client] = StringToInt(sValue[0]);
+		g_iTriggersDisplay[client] = StringToInt(sValue[1]);
 	}
 	else
 	{
