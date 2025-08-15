@@ -11,14 +11,15 @@
 
 #pragma newdecls required
 
+#define CONSOLE 0
 #define CHAT 1
-#define CONSOLE 2
+
+bool g_bLate = false;
 
 ConVar g_cBlockSpam;
 ConVar g_cBlockSpamDelay;
 
-Handle g_hButtons = INVALID_HANDLE;
-Handle g_hTriggers = INVALID_HANDLE;
+Handle g_hPreferences = INVALID_HANDLE;
 
 int g_iButtonsDisplay[MAXPLAYERS+1];
 int g_iTriggersDisplay[MAXPLAYERS+1];
@@ -32,9 +33,15 @@ public Plugin myinfo =
 	name = "Button & Triggers Notifier",
 	author = "Silence, maxime1907, .Rushaway",
 	description = "Logs button and trigger presses to the chat.",
-	version = "2.0.4",
+	version = "2.1.0",
 	url = ""
 };
+
+public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
+{
+	g_bLate = late;
+	return APLRes_Success;
+}
 
 public void OnPluginStart()
 {
@@ -42,22 +49,25 @@ public void OnPluginStart()
 	g_cBlockSpam = CreateConVar("sm_buttonnotifier_block_spam", "1", "Blocks spammers abusing certain buttons", FCVAR_NONE, true, 0.0, true, 1.0);
 	g_cBlockSpamDelay = CreateConVar("sm_buttonnotifier_block_spam_delay", "5", "Time to wait before notifying the next button press", FCVAR_NONE, true, 1.0, true, 60.0);
 
+	AutoExecConfig(true);
+
 	/* COOKIES */
 	SetCookieMenuItem(CookieHandler, 0, "Buttons Notifier Settings");
-	g_hButtons = RegClientCookie("bn_buttons_type", "Print usage of Buttons in Chat or Console", CookieAccess_Protected);
-	g_hTriggers = RegClientCookie("bn_triggers_type", "Print Trigger triggered in Chat or Console ", CookieAccess_Protected);
+	g_hPreferences = RegClientCookie("bn_preferences", "Button and Trigger notification preferences", CookieAccess_Protected);
 
 	/* HOOKS */
 	HookEvent("round_start", Event_RoundStart, EventHookMode_Pre);
 	
-	/* Late load */
+	if (!g_bLate)
+		return;
+
 	for (int i = 1; i < MaxClients; i++)
 	{
 		if (IsClientConnected(i))
 			OnClientPutInServer(i);
 	}
 
-	AutoExecConfig(true);
+	g_bLate = false;
 }
 
 public void OnMapStart()
@@ -90,13 +100,11 @@ public void OnMapEnd()
 
 public void OnClientPutInServer(int client)
 {
+	if (!g_bLate)
+		return;
+
 	if (AreClientCookiesCached(client))
 		ReadClientCookies(client);
-}
-
-public void OnClientDisconnect(int client)
-{
-	SetClientCookies(client);
 }
 
 public void OnClientCookiesCached(int client)
@@ -107,27 +115,30 @@ public void OnClientCookiesCached(int client)
 public void ReadClientCookies(int client)
 {
 	char sValue[32];
-	GetClientCookie(client, g_hButtons, sValue, 32);
-	if (sValue[0] != '\0')
-		g_iButtonsDisplay[client] = StringToInt(sValue);
-	else
-		g_iButtonsDisplay[client] = CONSOLE;
+	GetClientCookie(client, g_hPreferences, sValue, 32);
 
-	GetClientCookie(client, g_hTriggers, sValue, 32);
-	if (sValue[0] != '\0')
-		g_iTriggersDisplay[client] = StringToInt(sValue);
+	if (strlen(sValue) >= 2)
+	{
+		char sTemp[2];
+		FormatEx(sTemp, sizeof(sTemp), "%c", sValue[0]);
+		g_iButtonsDisplay[client] = StringToInt(sTemp);
+
+		FormatEx(sTemp, sizeof(sTemp), "%c", sValue[1]);
+		g_iTriggersDisplay[client] = StringToInt(sTemp);
+	}
 	else
+	{
+		// Set default values if no cookie exists or invalid format
+		g_iButtonsDisplay[client] = CONSOLE;
 		g_iTriggersDisplay[client] = CONSOLE;
+	}
 }
 
 public void SetClientCookies(int client)
 {
 	char sValue[8];
-	FormatEx(sValue, sizeof(sValue), "%i", g_iButtonsDisplay[client]);
-	SetClientCookie(client, g_hButtons, sValue);
-
-	FormatEx(sValue, sizeof(sValue), "%i", g_iTriggersDisplay[client]);
-	SetClientCookie(client, g_hTriggers, sValue);
+	FormatEx(sValue, sizeof(sValue), "%d%d", g_iButtonsDisplay[client], g_iTriggersDisplay[client]);
+	SetClientCookie(client, g_hPreferences, sValue);
 }
 
 public void CookieHandler(int client, CookieMenuAction action, any info, char[] buffer, int maxlen)
@@ -219,6 +230,7 @@ public int NotifierSettingHandler(Menu menu, MenuAction action, int param1, int 
 				}
 			}
 
+			SetClientCookies(param1);
 			NotifierSetting(param1);
 		}
 		case MenuAction_Cancel:
