@@ -11,8 +11,8 @@
 
 #pragma newdecls required
 
+#define CONSOLE 0
 #define CHAT 1
-#define CONSOLE 2
 
 bool g_bLate = false;
 
@@ -119,8 +119,12 @@ public void ReadClientCookies(int client)
 
 	if (strlen(sValue) >= 2)
 	{
-		g_iButtonsDisplay[client] = StringToInt(sValue[0]);
-		g_iTriggersDisplay[client] = StringToInt(sValue[1]);
+		char sTemp[2];
+		FormatEx(sTemp, sizeof(sTemp), "%c", sValue[0]);
+		g_iButtonsDisplay[client] = StringToInt(sTemp);
+
+		FormatEx(sTemp, sizeof(sTemp), "%c", sValue[1]);
+		g_iTriggersDisplay[client] = StringToInt(sTemp);
 	}
 	else
 	{
