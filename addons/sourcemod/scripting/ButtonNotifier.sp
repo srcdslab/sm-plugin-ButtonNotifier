@@ -33,7 +33,7 @@ public Plugin myinfo =
 	name = "Button & Triggers Notifier",
 	author = "Silence, maxime1907, .Rushaway",
 	description = "Logs button and trigger presses to the chat.",
-	version = "2.1.0",
+	version = "2.1.1",
 	url = ""
 };
 
@@ -63,8 +63,10 @@ public void OnPluginStart()
 
 	for (int i = 1; i < MaxClients; i++)
 	{
-		if (IsClientConnected(i))
-			OnClientPutInServer(i);
+		if (!IsClientConnected(i) || IsFakeClient(i) || !AreClientCookiesCached(i))
+			continue;
+
+		ReadClientCookies(i);
 	}
 
 	g_bLate = false;
@@ -96,15 +98,6 @@ public void OnMapEnd()
 	UnhookEntityOutput("trigger_once", "OnTrigger", TriggerTouched);
 	UnhookEntityOutput("trigger_multiple", "OnStartTouch", TriggerTouched);
 	UnhookEntityOutput("trigger_teleport", "OnStartTouch", TriggerTouched);
-}
-
-public void OnClientPutInServer(int client)
-{
-	if (!g_bLate)
-		return;
-
-	if (AreClientCookiesCached(client))
-		ReadClientCookies(client);
 }
 
 public void OnClientCookiesCached(int client)
