@@ -33,7 +33,7 @@ public Plugin myinfo =
 	name = "Button & Triggers Notifier",
 	author = "Silence, maxime1907, .Rushaway",
 	description = "Logs button and trigger presses to the chat.",
-	version = "2.1.1",
+	version = "2.1.2",
 	url = ""
 };
 
@@ -74,7 +74,7 @@ public void OnPluginStart()
 
 public void OnMapStart()
 {
-	CreateTimer(1.0, Timer_HookButtons);
+	CreateTimer(1.0, Timer_HookButtons, _, TIMER_FLAG_NO_MAPCHANGE);
 }
 
 public void Event_RoundStart(Event hEvent, const char[] sName, bool bDontBroadcast)
