@@ -15,14 +15,14 @@ This repository contains the **ButtonNotifier** SourceMod plugin, which monitors
 
 ### Language & Platform
 - **Language**: SourcePawn (.sp files)
-- **Platform**: SourceMod 1.11+ (minimum version specified in sourceknight.yaml)
-- **Compiler**: SourcePawn compiler (spcomp) via SourceKnight build system
+- **Platform**: SourceMod 1.12.x
+- **Compiler**: SourcePawn compiler (spcomp) via native GitHub Actions
 - **Target**: Source engine game servers (CS:GO, CS2, etc.)
 
 ### Build System
-- **Primary Tool**: SourceKnight - automated build and dependency management
-- **Configuration**: `sourceknight.yaml` in repository root
-- **Build Command**: Uses GitHub Actions with `maxime1907/action-sourceknight@v1`
+- **Primary Tool**: Native GitHub Actions workflow (`.github/workflows/ci.yml`) using `rumblefrog/setup-sp` to fetch the SourcePawn compiler
+- **Configuration**: dependencies are cloned directly in the workflow (see `.github/workflows/ci.yml`)
+- **Build Command**: `spcomp` invoked directly in the "Build sourcemod plugin" workflow step
 - **Output**: Compiled `.smx` files in `/addons/sourcemod/plugins/`
 
 ### Dependencies
@@ -46,7 +46,6 @@ This repository contains the **ButtonNotifier** SourceMod plugin, which monitors
 ├── workflows/ci.yml           # GitHub Actions CI/CD pipeline
 └── dependabot.yml            # Automated dependency updates
 
-/sourceknight.yaml            # Build configuration and dependencies
 /.gitignore                   # Git ignore patterns (excludes .smx, build artifacts)
 ```
 
@@ -127,13 +126,13 @@ public Plugin myinfo =
 ## Build & Testing Process
 
 ### Local Development
-1. **Install SourceKnight**: Follow installation from their repository
-2. **Build plugin**: Run build command from repository root
-3. **Dependencies**: Automatically downloaded and configured via sourceknight.yaml
+1. **Install SourceMod/spcomp**: Use `rumblefrog/setup-sp` locally or download SourceMod 1.12.x manually
+2. **Build plugin**: `spcomp -i include -o ../plugins/TriggerWatcher.smx TriggerWatcher.sp` from `addons/sourcemod/scripting`
+3. **Dependencies**: Clone `sm-plugin-MultiColors` and `sm-plugin-EntWatch` includes into `addons/sourcemod/scripting/include` (see `.github/workflows/ci.yml` for exact steps)
 
 ### CI/CD Pipeline
 - **Trigger**: Push, PR, or manual dispatch
-- **Build**: Ubuntu 24.04 with SourceKnight action
+- **Build**: `ubuntu-latest` using native GitHub Actions steps (`rumblefrog/setup-sp` + `spcomp`)
 - **Artifacts**: Packaged plugin files uploaded as build artifacts
 - **Release**: Automatic tagging and release creation for main branch
 
@@ -214,9 +213,8 @@ public Plugin myinfo =
 - Debug with `LogMessage()` when troubleshooting
 
 ### Dependencies
-- All dependencies automatically managed by SourceKnight
-- Check `sourceknight.yaml` for version specifications
-- Update dependency versions in YAML if compatibility issues arise
+- Dependencies are cloned from source in the GitHub Actions workflow (`.github/workflows/ci.yml`)
+- Update the dependency clone URLs/refs in the workflow if compatibility issues arise
 
 ## Version Management
 
