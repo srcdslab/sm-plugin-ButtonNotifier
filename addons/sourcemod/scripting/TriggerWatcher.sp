@@ -7,7 +7,7 @@
 #include <clientprefs>
 #include <multicolors>
 #undef REQUIRE_PLUGIN
-#tryinclude <EntWatch>
+#tryinclude <entWatch_core>
 #define REQUIRE_PLUGIN
 
 enum NotifyMode
@@ -26,6 +26,9 @@ enum NotifyMode
 
 bool g_bLate = false;
 int g_iRoundStartedTime = 0;
+
+bool g_bEntWatch = false;
+bool g_bNativeEntWatch = false;
 
 ConVar g_hCVar_SpamDelay;
 ConVar g_hCVar_FreezeTime;
@@ -49,7 +52,7 @@ public Plugin myinfo =
 	name = "TriggerWatcher",
 	author = "Silence, maxime1907, .Rushaway",
 	description = "Logs button and trigger presses to the chat.",
-	version = "3.1.0",
+	version = "3.2.0",
 	url = ""
 };
 
@@ -104,6 +107,35 @@ public void OnMapStart()
 {
 	g_iRoundStartedTime = GetTime();
 	CreateTimer(1.0, Timer_HookEntities, _, TIMER_FLAG_NO_MAPCHANGE);
+}
+
+public void OnAllPluginsLoaded()
+{
+	g_bEntWatch = LibraryExists("entWatch-core");
+	VerifyNative_EntWatch();
+}
+
+public void OnLibraryAdded(const char[] name)
+{
+	if (strcmp(name, "entWatch-core", false) == 0)
+	{
+		g_bEntWatch = true;
+		VerifyNative_EntWatch();
+	}
+}
+
+public void OnLibraryRemoved(const char[] name)
+{
+	if (strcmp(name, "entWatch-core", false) == 0)
+	{
+		g_bEntWatch = false;
+		VerifyNative_EntWatch();
+	}
+}
+
+stock void VerifyNative_EntWatch()
+{
+	g_bNativeEntWatch = g_bEntWatch && CanTestFeatures() && GetFeatureStatus(FeatureType_Native, "EW_IsEntityItem") == FeatureStatus_Available;
 }
 
 public void Event_RoundStart(Event hEvent, const char[] sName, bool bDontBroadcast)
@@ -284,10 +316,13 @@ public void ButtonPressed(const char[] output, int caller, int activator, float 
 		return;
 	}
 
-#if defined _EntWatch_include
-	int parent = GetEntPropEnt(caller, Prop_Data, "m_hParent");
-	if (IsValidEntity(parent) && EntWatch_IsSpecialItem(parent))
-		return;
+#if defined _entWatch_included
+	if (g_bNativeEntWatch)
+	{
+		int parent = GetEntPropEnt(caller, Prop_Data, "m_hParent");
+		if (IsValidEntity(parent) && EW_IsEntityItem(parent))
+			return;
+	}
 #endif
 
 	int currentTime = GetTime();

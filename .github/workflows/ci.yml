@@ -21,7 +21,7 @@ jobs:
           mkdir -p addons/sourcemod/scripting/include deps
           git clone --depth=1 https://github.com/srcdslab/sm-plugin-MultiColors.git deps/multicolors
           cp -R deps/multicolors/addons/sourcemod/scripting/include/* addons/sourcemod/scripting/include/
-          git clone --depth=1 https://github.com/srcdslab/sm-plugin-EntWatch.git deps/entwatch
+          git clone --depth=1 https://github.com/srcdslab/sm-plugin-entwatch-4.git deps/entwatch
           cp -R deps/entwatch/addons/sourcemod/scripting/include/* addons/sourcemod/scripting/include/
 
       - name: Build sourcemod plugin

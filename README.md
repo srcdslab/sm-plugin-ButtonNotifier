@@ -7,7 +7,7 @@ TriggerWatcher logs button and trigger activations to chat and/or console for ad
 - Clean, short chat messages with a [TW] prefix.
 - Detailed console/server logs with user ID and entity info.
 - Spam throttling for rapid button presses.
-- Optional EntWatch integration to ignore special items.
+- Optional entWatch-core (entWatch 4) integration to ignore special items.
 
 ## Installation
 1) Compile (or download latest release) and install the plugin.

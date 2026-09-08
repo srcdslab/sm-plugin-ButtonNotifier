@@ -1,14 +1,14 @@
-# Copilot Instructions for ButtonNotifier Plugin
+# Copilot Instructions for TriggerWatcher Plugin
 
 ## Repository Overview
 
-This repository contains the **ButtonNotifier** SourceMod plugin, which monitors and logs button presses and trigger activations in Source engine games. The plugin notifies administrators when players interact with buttons and triggers, with configurable spam protection and user preferences for notification display (console vs chat).
+This repository contains the **TriggerWatcher** SourceMod plugin, which monitors and logs button presses and trigger activations in Source engine games. The plugin notifies administrators when players interact with buttons and triggers, with configurable spam protection and user preferences for notification display (console vs chat).
 
 ### Key Features
 - Real-time monitoring of `func_button` and trigger entities (`trigger_once`, `trigger_multiple`, `trigger_teleport`)
 - Admin-only notifications with spam protection
 - User-configurable preferences (console/chat display) stored via client cookies
-- Integration with EntWatch plugin (optional dependency)
+- Integration with entWatch-core plugin (optional dependency)
 - Colored chat messages using MultiColors library
 
 ## Technical Environment
@@ -31,16 +31,16 @@ This repository contains the **ButtonNotifier** SourceMod plugin, which monitors
 3. **CS:GO/CS2**: Counter-Strike specific functions (included with SourceMod)
 4. **Client Preferences**: Cookie system for user settings (included with SourceMod)
 5. **MultiColors**: Colored chat message library (from srcdslab/sm-plugin-MultiColors)
-6. **EntWatch** (optional): Special item detection (from srcdslab/sm-plugin-EntWatch)
+6. **entWatch-core** (optional): Special item detection (from srcdslab/sm-plugin-entwatch-4)
 
 ## File Structure
 
 ```
 /addons/sourcemod/scripting/
-├── ButtonNotifier.sp          # Main plugin source code
+├── TriggerWatcher.sp          # Main plugin source code
 └── include/                   # Include files (from dependencies)
     ├── multicolors.inc        # Color formatting functions
-    └── EntWatch.inc           # EntWatch integration (optional)
+    └── entWatch_core.inc      # entWatch-core integration (optional)
 
 /.github/
 ├── workflows/ci.yml           # GitHub Actions CI/CD pipeline
@@ -78,7 +78,7 @@ This repository contains the **ButtonNotifier** SourceMod plugin, which monitors
 #include <clientprefs>                 // Client cookie system
 #include <multicolors>                 // Colored chat messages
 #undef REQUIRE_PLUGIN                  // Allow optional plugins
-#tryinclude <EntWatch>                 // Optional EntWatch integration
+#tryinclude <entWatch_core>            // Optional entWatch-core integration
 #define REQUIRE_PLUGIN                 // Re-enable plugin requirements
 #pragma newdecls required             // Use new declaration syntax
 ```
@@ -94,10 +94,10 @@ This repository contains the **ButtonNotifier** SourceMod plugin, which monitors
 ```sourcepawn
 public Plugin myinfo =
 {
-    name = "Button & Triggers Notifier",
+    name = "TriggerWatcher",
     author = "Silence, maxime1907, .Rushaway",
     description = "Logs button and trigger presses to the chat.",
-    version = "2.1.1",  // Update this when making changes
+    version = "3.2.0",  // Update this when making changes
     url = ""
 };
 ```
@@ -128,7 +128,7 @@ public Plugin myinfo =
 ### Local Development
 1. **Install SourceMod/spcomp**: Use `rumblefrog/setup-sp` locally or download SourceMod 1.12.x manually
 2. **Build plugin**: `spcomp -i include -o ../plugins/TriggerWatcher.smx TriggerWatcher.sp` from `addons/sourcemod/scripting`
-3. **Dependencies**: Clone `sm-plugin-MultiColors` and `sm-plugin-EntWatch` includes into `addons/sourcemod/scripting/include` (see `.github/workflows/ci.yml` for exact steps)
+3. **Dependencies**: Clone `sm-plugin-MultiColors` and `sm-plugin-entwatch-4` includes into `addons/sourcemod/scripting/include` (see `.github/workflows/ci.yml` for exact steps)
 
 ### CI/CD Pipeline
 - **Trigger**: Push, PR, or manual dispatch
@@ -144,7 +144,7 @@ public Plugin myinfo =
 - [ ] Spam protection functions as expected
 - [ ] Client preferences save and load properly
 - [ ] Admin permissions are respected
-- [ ] Optional EntWatch integration works when available
+- [ ] Optional entWatch-core integration works when available
 
 ## Common Development Tasks
 
@@ -172,10 +172,10 @@ public Plugin myinfo =
 
 ## Integration Points
 
-### EntWatch Plugin
-- Optional dependency using `#tryinclude <EntWatch>`
-- Check `EntWatch_IsSpecialItem()` to avoid duplicate notifications
-- Gracefully handle when EntWatch is not loaded
+### entWatch-core Plugin
+- Optional dependency using `#tryinclude <entWatch_core>`
+- Check `EW_IsEntityItem()` to avoid duplicate notifications
+- Gracefully handle when entWatch-core is not loaded
 
 ### MultiColors Library
 - Required for colored chat messages
